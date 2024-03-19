@@ -48,12 +48,23 @@ Esta guía proporciona instrucciones paso a paso para instalar y configurar Ansi
      ```yaml
      ---
      - hosts: ubuntu_servers
-       become: yes
-       tasks:
-         - name: Actualizar todos los paquetes
-           apt:
-             upgrade: dist
-             update_cache: yes
+        become: yes
+        tasks:
+            - name: Actualizar todos los paquetes
+            apt:
+                upgrade: yes
+                update_cache: yes
+            ignore_errors: yes
+            register: update_result
+
+            - name: Verificar si hay actualizaciones pendientes
+            fail:
+                msg: "Existen actualizaciones pendientes en el servidor, por favor revisa y aplica manualmente."
+            when: update_result|failed
+
+            - name: Reiniciar el servidor si es necesario
+            reboot:
+            when: update_result|changed
      ```
 
      **Nota:** Este ejemplo está pensado para actualizaciones en servidores de producción. Asegúrate de adaptar el playbook según tus necesidades específicas.
