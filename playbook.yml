@@ -1,0 +1,18 @@
+- hosts: ubuntu_servers
+  become: yes
+  tasks:
+    - name: Actualizar todos los paquetes
+      apt:
+        upgrade: yes
+        update_cache: yes
+      ignore_errors: yes
+      register: update_result
+
+    - name: Verificar si hay actualizaciones pendientes
+      fail:
+        msg: "Existen actualizaciones pendientes en el servidor, por favor revisa y aplica manualmente."
+      when: update_result|failed
+
+    - name: Reiniciar el servidor si es necesario
+      reboot:
+      when: update_result|changed
